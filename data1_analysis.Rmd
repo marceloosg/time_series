@@ -55,10 +55,7 @@ train=seq(1:train_length)
 data_phase=data.table(x=seq(1:length(data1$V1)),y=data1$V1,type='test')
 data_phase[train]$type='train'
 fit_model = lm(y ~ sin(w*x)+cos(w*x),data=data_phase[train])
-predict_data= predict(fit_model,newdata=data_phase[-train])
-data_phase$fit=c(fit_model$fitted.values,predict_data)
-library(ggplot2)
-ggplot(data=data_phase[type=='test'][1:50])+geom_line(aes(x=x,y=fit),color='blue')+geom_point(aes(x=x,y=y))
+1
 ```
 
 ```{r}

@@ -41,6 +41,7 @@ The lowest relevent period is `r round(1/wdata[order(-spec)][1:20][,max(freq)])`
 Let's smooth and explore the data in order visualyze.
 
 ```{r}
+library(ggplot2)
 #w=2*pi/Period
 train_length=as.integer(length(data2$V1)*3/4)
 train=seq(1:train_length)
@@ -84,8 +85,13 @@ ggplot(corr,aes(x=offset,y=cor,color=factor(lag)))+geom_line()+facet_wrap(~windo
 
 ```{r}
 fit_model=auto.arima(data_phase[train]$y)
-predict_data= forecast(fit_model,length(data_phase[type=='test']))
-data_phase$fit=c(fit_model$fitted.values,predict_data)
+predict_data= forecast(fit_model,h=dim(data_phase[type=='test'])[1])
+aux=c(fit_model$fitted,predict_data$mean)
+data_phase$fit[1:length(aux)]=aux
 library(ggplot2)
-ggplot(data=data_phase[type=='test'][1:50])+geom_line(aes(x=x,y=fit),color='blue')+geom_point(aes(x=x,y=y))
+ggplot(data=data_phase[type=='test'][1:50])+geom_line(aes(x=x,y=fit),color='blue')+geom_line(aes(x=x,y=y))+
+  ggtitle('Auto Arima Performance')
 ```
+
+
+![Performance of LSTM](performance.png)

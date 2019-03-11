@@ -1,0 +1,81 @@
+---
+title: "Time series analysis, dataset 1"
+output:
+  html_document:
+    df_print: paged
+---
+
+In this document it a time series dataset is going to be check to see if it is free from noise and it
+can be reasonable describe by a closed mathematical formula.
+
+# Install Libraries
+```{r}
+#install.packages('data.table')
+#install.packages('TSA')
+#install.packages('ggplot2')
+```
+
+
+# Load dataset and perform visual inspection
+```{r}
+library(data.table)
+data1=fread('data/data1.csv')
+plot(seq(1:100),data1[1:100]$V1)
+```
+
+# Extract espectral distribuition
+```{r}
+library(TSA)
+p=periodogram(data1$V1)
+plot(p)
+```
+
+# Sort and extract the top 6 frequencies
+```{r}
+wdata=data.table(freq=p$freq,spec=p$spec)
+wdata[order(-spec)][1:6]
+```
+
+# Convert the top frequency to Period.
+```{r}
+Period=round(1/wdata[order(-spec)][1]$freq)
+Period
+```
+
+Now that it has been verified that a clear frequency dominates the behavior of the data, a sinusoidal fit
+of the form: $$y = A Sin(\omega x + \phi)$$ is to be performed.
+From trigonometric identity it can be seen that
+$$y = a Sin(\omega x) + b Cos(\omega x)$$
+$$ A = \sqrt{a^2+b^2}$$
+The parameter can now be fitted by linear regression:
+```{r}
+w=2*pi/Period
+train_length=as.integer(length(data1$V1)*3/4)
+train=seq(1:train_length)
+data_phase=data.table(x=seq(1:length(data1$V1)),y=data1$V1,type='test')
+data_phase[train]$type='train'
+fit_model = lm(y ~ sin(w*x)+cos(w*x),data=data_phase[train])
+predict_data= predict(fit_model,newdata=data_phase[-train])
+data_phase$fit=c(fit_model$fitted.values,predict_data)
+library(ggplot2)
+ggplot(data=data_phase[type=='test'][1:50])+geom_line(aes(x=x,y=fit),color='blue')+geom_point(aes(x=x,y=y))
+```
+
+```{r}
+summary(fit_model)
+```
+
+```{r}
+data_phase[,residuals:=((y-fit))]
+ggplot(data_phase,aes(x=fit,y=residuals,color=type,size=type))+geom_point()
+```
+
+The fit is essentially perfect, that is, the parameters incertainties are smaller than the available precision of the estimates: 
+```{r}
+parameters=coefficients(fit_model)
+errs=summary(fit_model)$coefficients[5:6]
+param=data.table(a=parameters[2],a_err=errs[1],
+b=parameters[3],b_err=errs[2],
+A=sqrt(a^2+b^2),
+phi=asin(a/A))
+```

@@ -47,9 +47,14 @@ train=seq(1:train_length)
 data_phase=data.table(x=seq(1:length(data2$V1)),y=data2$V1,type='test')
 data_phase[train]$type='train'
 library(forecast)
-data_phase[,y_50:=ma(y,50)]
-data_phase[,y_100:=ma(y,100)]
-data_phase[,y_200:=ma(y,200)]
+pma=function(y,n){
+  sapply(1:length(y),function(o) {i=o-n+1; ifelse(i < 1,NA,mean(y[i:o],na.rm = T))})
+}
+
+
+data_phase[,y_50:=pma(y,50)]
+data_phase[,y_100:=pma(y,100)]
+data_phase[,y_200:=pma(y,200)]
 ggplot(data_phase)+geom_line(aes(x,y))+
   geom_line(aes(x,y_50),color='green')+
   geom_line(aes(x,y_100),color='blue')+

@@ -1,7 +1,8 @@
 # time_series
 Description
 
-Ship routing optimization algorithms.
+Tiem series prediction models
+
 Installation
 
 This application works with Python via pip

@@ -8,11 +8,42 @@ import tensorflow as tf
 import pandas as pd
 import numpy as np
 import pickle
-import keras
+import os
+
+class PriceModel:
+    scales = (0, 0)
+    model = None
+    valid = False
+    x = None
+
+    def __init__(self):
+        print(os.listdir())
+        with open('models/scales.pkl', 'rb') as mp:
+            output = pickle.load(mp)
+            self.scales = output
+
+        self.model = load_model('models/model.h5py')
+        self.graph = tf.get_default_graph()
+        print("MODEL LOADED")
+
+    def scale(self, x):
+        return (x - self.scales[1]) / (self.scales[0] - self.scales[1])
+
+    def input(self, x):
+        self.valid = len(x) == 60
+        if self.valid:
+            scaled_data = self.scale(np.array(x))
+            self.x = np.reshape(scaled_data, (1, 60, 1))
+
+    def predict(self):
+        if not self.valid:
+            return False
+        with self.graph.as_default():
+            y=self.model.predict(self.x)
+        return y
 
 
-
-class Controller:
+class StockModel:
     data=None
 
     def __init__(self, path='data3.csv', train_model=True, scaler_path='data3.scale.pkl'):
@@ -27,8 +58,8 @@ class Controller:
             self.x_test, self.y_test = self.split_data(False)
             self.model = self.set_model()
         else:
-            self.model = load_model(path)
-            with open(scaler_path, 'rb') as f:
+            self.model = load_model('models/'+path)
+            with open('models/'+scaler_path, 'rb') as f:
                 self.xscaler, self.yscaler = pickle.load(f)
         self.graph = tf.get_default_graph()
 

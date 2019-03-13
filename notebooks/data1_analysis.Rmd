@@ -55,7 +55,7 @@ train=seq(1:train_length)
 data_phase=data.table(x=seq(1:length(data1$V1)),y=data1$V1,type='test')
 data_phase[train]$type='train'
 fit_model = lm(y ~ sin(w*x)+cos(w*x),data=data_phase[train])
-1
+w
 ```
 
 ```{r}
@@ -63,6 +63,12 @@ summary(fit_model)
 ```
 
 ```{r}
+library(ggplot2)
+
+predicted=predict(fit_model,newdata=data_phase[-train])
+fit=c(fit_model$fitted.values,predicted)
+data_phase$fit=fit
+
 data_phase[,residuals:=((y-fit))]
 ggplot(data_phase,aes(x=fit,y=residuals,color=type,size=type))+geom_point()
 ```
@@ -72,7 +78,15 @@ The fit is essentially perfect, that is, the parameters incertainties are smalle
 parameters=coefficients(fit_model)
 errs=summary(fit_model)$coefficients[5:6]
 param=data.table(a=parameters[2],a_err=errs[1],
-b=parameters[3],b_err=errs[2],
-A=sqrt(a^2+b^2),
-phi=asin(a/A))
+b=parameters[3],b_err=errs[2])
+param[,A:=sqrt(a^2+b^2)]
+param[,phi:=asin(a/A)]
+```
+$$y = Sin(0.06283185 x + 0.6336282)$$
+```{r}
+plot(data_phase[type=='test']$y,data_phase[type=='test']$fit)
+```
+```{r}
+ggplot(data_phase[type=='test'])+geom_line(aes(x=x,y=y),color='red')+
+geom_line(aes(x=x,y=sin(w*x+param$phi[1]+0.4)),pch=2)
 ```

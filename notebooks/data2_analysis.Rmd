@@ -1,0 +1,97 @@
+---
+title: "Time series analysis, dataset 2"
+output:
+  html_document:
+    df_print: paged
+---
+
+In this document it a time series dataset is going to be check to see its periodicity and autocorrelation 
+properties.
+
+# Install Libraries
+```{r}
+#install.packages('data.table')
+#install.packages('TSA')
+#install.packages('ggplot2')
+#install.packages('forecast')
+```
+
+
+# Load dataset and perform visual inspection
+```{r}
+library(data.table)
+data2=fread('data/data2.csv')
+plot(seq(1:900),data2[1:900]$V1)
+```
+
+# Extract espectral distribuition
+```{r}
+library(TSA)
+p=periodogram(data2$V1)
+#plot(p)
+```
+
+# Sort and extract the top 20 frequencies
+```{r}
+wdata=data.table(freq=p$freq,spec=p$spec)
+wdata[order(-spec)][1:20]
+```
+The lowest relevent period is `r round(1/wdata[order(-spec)][1:20][,max(freq)])`.
+
+Let's smooth and explore the data in order visualyze.
+
+```{r}
+library(ggplot2)
+#w=2*pi/Period
+train_length=as.integer(length(data2$V1)*3/4)
+train=seq(1:train_length)
+data_phase=data.table(x=seq(1:length(data2$V1)),y=data2$V1,type='test')
+data_phase[train]$type='train'
+library(forecast)
+pma=function(y,n){
+  sapply(1:length(y),function(o) {i=o-n+1; ifelse(i < 1,NA,mean(y[i:o],na.rm = T))})
+}
+
+
+data_phase[,y_50:=pma(y,50)]
+data_phase[,y_100:=pma(y,100)]
+data_phase[,y_200:=pma(y,200)]
+ggplot(data_phase)+geom_line(aes(x,y))+
+  geom_line(aes(x,y_50),color='green')+
+  geom_line(aes(x,y_100),color='blue')+
+  geom_line(aes(x,y_200),color='red')
+```
+
+
+The plot shows that the fluctuations may be periodic on a small scale, and there is trends on a macro scale
+that is hard to see any obvious pattern.
+```{r}
+total=dim(data_phase)[1]
+max_windows_size=1000
+max_lag=100
+offset_size=(total-max_windows_size-max_lag)
+lags=function(lag,windows_size){
+  corrs=sapply(seq(1,offset_size,20),function(offsets){
+    lagoffset=offsets+lag
+    cor(data_phase[offsets:(offsets+windows_size)]$y,
+             data_phase[lagoffset:(lagoffset+windows_size)]$y)
+  })
+  data.table(lag=lag,offset=(1:length(corrs)-1)*20+1,cor=corrs,window=windows_size)}
+gen=function(windows_size){
+  rbindlist(lapply(seq(1,max_lag,20),function(lag) lags(lag,windows_size)))}
+corr=rbindlist(lapply(seq(10,max_windows_size,100),gen))
+ggplot(corr,aes(x=offset,y=cor,color=factor(lag)))+geom_line()+facet_wrap(~window)
+```
+
+```{r}
+fit_model=auto.arima(data_phase[train]$y)
+predict_data= forecast(fit_model,h=dim(data_phase[type=='test'])[1])
+aux=c(fit_model$fitted,predict_data$mean)
+data_phase$fit[1:length(aux)]=aux
+library(ggplot2)
+ggplot(data=data_phase[type=='test'][1:50])+geom_line(aes(x=x,y=fit),color='blue')+geom_line(aes(x=x,y=y))+
+  ggtitle('Auto Arima Performance')
+```
+
+
+![Performance of LSTM](performance.png)

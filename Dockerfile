@@ -7,5 +7,10 @@ ADD requirements.txt app/requirements.txt
 
 RUN pip3 install -r app/requirements.txt
 
-COPY server.py model.pkl scales.pkl app/
-CMD ["python", "server.py"]~
+ADD server.py app/server.py
+ADD model.h5py app/model.h5py
+ADD scales.pkl app/scales.pkl
+
+EXPOSE 5051
+
+ENTRYPOINT ["python", "app/server.py"]~

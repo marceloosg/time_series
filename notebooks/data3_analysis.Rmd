@@ -1,12 +1,13 @@
 ---
-title: "Time series analysis, dataset 2"
+title: "Time series analysis, dataset 3"
 output:
   html_document:
     df_print: paged
 ---
 
-In this document it a time series dataset is going to be check to see if it is free from noise and it
-can be reasonable describe by a closed mathematical formula.
+
+In this document it a time series dataset is going to be check to see its periodicity and autocorrelation 
+properties.
 
 # Install Libraries
 ```{r}
@@ -20,8 +21,8 @@ can be reasonable describe by a closed mathematical formula.
 # Load dataset and perform visual inspection
 ```{r}
 library(data.table)
-data2=fread('data/data2.csv')
-plot(seq(1:900),data2[1:900]$V1)
+data3=fread('data/data3.csv')
+summary(data3)
 ```
 
 # Extract espectral distribuition

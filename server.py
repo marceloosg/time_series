@@ -7,6 +7,8 @@ import keras.models  as km
 from keras.layers import Dense, Dropout, LSTM
 import keras
 import tensorflow as tf
+import os
+
 
 class model_store():
     scales = (0, 0)
@@ -15,11 +17,12 @@ class model_store():
     x = None
 
     def __init__(self):
-        with open('scales.pkl', 'rb') as mp:
+        print(os.listdir())
+        with open('app/scales.pkl', 'rb') as mp:
             output = pickle.load(mp)
             self.scales = output
 
-        self.model = km.load_model('model.h5py')
+        self.model = km.load_model('app/model.h5py')
         self.graph = tf.get_default_graph()
         print("MODEL LOADED")
 
@@ -49,6 +52,21 @@ def hello():
     return "Server is up"
 
 
+@app.route("/math/", methods=['GET', 'POST'])
+def math():
+    if not request.json:
+        abort(400)
+    print(request.json)
+    x=request.json['load']
+    print(hashlib.md5(x.__str__().encode()).digest())
+    model.input(x)
+    y=model.predict()
+    print(keras.__version__)
+    #json.dumps({'loads':str(model.x)})
+
+    #return #json.dumps({'load':hashlib.md5(x.__str__().encode()).digest()})
+    return json.dumps({'y':str(y)})
+
 @app.route("/data/", methods=['GET', 'POST'])
 def data():
     if not request.json:
@@ -64,6 +82,20 @@ def data():
     #return #json.dumps({'load':hashlib.md5(x.__str__().encode()).digest()})
     return json.dumps({'y':str(y)})
 
+@app.route("/stock/", methods=['GET', 'POST'])
+def stock():
+    if not request.json:
+        abort(400)
+    print(request.json)
+    x=request.json['load']
+    print(hashlib.md5(x.__str__().encode()).digest())
+    model.input(x)
+    y=model.predict()
+    print(keras.__version__)
+    #json.dumps({'loads':str(model.x)})
+
+    #return #json.dumps({'load':hashlib.md5(x.__str__().encode()).digest()})
+    return json.dumps({'y':str(y)})
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5051)

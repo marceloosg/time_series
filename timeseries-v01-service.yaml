@@ -1,0 +1,17 @@
+---
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  name: "timeseries-v01-service"
+  namespace: "default"
+  labels:
+    app: "timeseries-v0.1"
+spec:
+  ports:
+  - protocol: "TCP"
+    port: 80
+    targetPort: 5051
+  selector:
+    app: "timeseries-v0.1"
+  type: "LoadBalancer"
+  loadBalancerIP: ""

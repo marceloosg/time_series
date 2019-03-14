@@ -13,7 +13,7 @@ or you can pip install packages in your home directory instead, which doesn't re
 
 pip install -r requirements.txt --user
 
-Usage
+Server local Usage:
 
 python3 server.py
 
@@ -28,16 +28,20 @@ Open http://localhost:5051
 
 # Client
 
-Dataset2:
-data2.test.json has one key: 'load'
-its value is an one-dimensional array of length multiple of 60
-the model arranges every 60 elements into one individual input to be predicted
+Local Usage:
 
-curl -H "Content-Type: application/json" --data @tests/data2.test.json http://localhost:5051/data
+Dataset2:
+	data2.test.json has one key: 'load'
+	its value is an one-dimensional array of length multiple of 60
+	the model arranges every 60 elements into one individual input to be predicted
+
+	curl -H "Content-Type: application/json" --data @tests/data2.test.json http://localhost:5051/data
 
 Dataset3:
-data3.test.json has one key: 'load'
-its value is a list where each element is another list that follows the pattern of data3.input.columns.
+	data3.test.json has one key: 'load'
+	its value is a list where each element is another list that follows the pattern of data3.input.columns.
 
-curl -H "Content-Type: application/json" --data @tests/data3.test.json http://localhost:5051/stock
+	curl -H "Content-Type: application/json" --data @tests/data3.test.json http://localhost:5051/stock
 
+
+For remote access exchange "localhost:5051" to the relevant ip, see the Makefile, make data2.remote, make data3.remote

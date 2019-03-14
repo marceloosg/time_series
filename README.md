@@ -7,7 +7,7 @@ Description
 
 *	**notebooks/**:contains the notebooks, html files that answers the stakeholders questions
 *	**test/**: sample request and answers json files for api testing
-*	**app/**application files
+*	**app/**: application files
 	*	**app/server.py**Flask server
 	*	**app/models**: Static model saved informations
 	*	**app/lib**: Model helper classes

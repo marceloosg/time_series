@@ -1,7 +1,15 @@
 # time_series
 Description
 
-Tiem series prediction models
+Time series prediction models
+
+notebooks/: contains the notebooks, html files that answers the stakeholders questions
+test/: sample request and answers json files for api testing
+app/: application files
+app/server.py: Flask server
+app/models: Static model saved informations
+app/lib: Model helper classes
+
 
 Installation
 
@@ -31,15 +39,19 @@ Open http://localhost:5051
 Local Usage:
 
 Dataset2:
-	data2.test.json has one key: 'load'
-	its value is an one-dimensional array of length multiple of 60
-	the model arranges every 60 elements into one individual input to be predicted
+	-data2.test.json has one key: 'load'
+	-its value is an one-dimensional array of length multiple of 60
+	-the model arranges every 60 elements into one individual input to be predicted
+	
+	json: '{"load": [ ... ] }'
 
 	curl -H "Content-Type: application/json" --data @tests/data2.test.json http://localhost:5051/data
 
 Dataset3:
-	data3.test.json has one key: 'load'
-	its value is a list where each element is another list that follows the pattern of data3.input.columns.
+	-data3.test.json has one key: 'load'
+	-its value is a list where each element is another list that follows the pattern of data3.input.columns.
+
+	json:  '{"load": [[ ... ], [ ... ], [ ... ], etc }'
 
 	curl -H "Content-Type: application/json" --data @tests/data3.test.json http://localhost:5051/stock
 
